@@ -29,12 +29,13 @@ type RunServerFunc func(context.Context, config.ServiceConfig, http.Handler) err
 
 // Config is the struct that collects the parts the router should be builded from
 type Config struct {
-	Engine         *gin.Engine
-	Middlewares    []gin.HandlerFunc
-	HandlerFactory HandlerFactory
-	ProxyFactory   proxy.Factory
-	Logger         logging.Logger
-	RunServer      RunServerFunc
+	Engine          *gin.Engine
+	Middlewares     []gin.HandlerFunc
+	HandlerFactory  HandlerFactory
+	BHandlerFactory BHandlerFactory
+	ProxyFactory    proxy.Factory
+	Logger          logging.Logger
+	RunServer       RunServerFunc
 }
 
 // DefaultFactory returns a gin router factory with the injected proxy factory and logger.
@@ -48,6 +49,20 @@ func DefaultFactory(proxyFactory proxy.Factory, logger logging.Logger) router.Fa
 			ProxyFactory:   proxyFactory,
 			Logger:         logger,
 			RunServer:      server.RunServer,
+		},
+	)
+}
+
+func DynamicFactory(proxyFactory proxy.Factory, logger logging.Logger) router.Factory {
+	return NewFactory(
+		Config{
+			Engine:          gin.Default(),
+			Middlewares:     []gin.HandlerFunc{},
+			HandlerFactory:  EndpointHandler,
+			BHandlerFactory: BEndpointHandler,
+			ProxyFactory:    proxyFactory,
+			Logger:          logger,
+			RunServer:       server.RunServer,
 		},
 	)
 }
@@ -141,8 +156,35 @@ func (r ginRouter) registerKrakendEndpoints(rg *gin.RouterGroup, cfg config.Serv
 			r.cfg.Logger.Error(logPrefix, "Calling the ProxyFactory", err.Error())
 			continue
 		}
-		r.registerKrakendEndpoint(rg, c.Method, c, r.cfg.HandlerFactory(c, proxyStack), len(c.Backend))
+		if c.Type == "internal" {
+			r.addEndpointProxyToContext(c.Method, c, r.cfg.BHandlerFactory(c, proxyStack), len(c.Backend))
+		} else {
+			r.registerKrakendEndpoint(rg, c.Method, c, r.cfg.HandlerFactory(c, proxyStack), len(c.Backend))
+		}
 	}
+}
+
+func (r ginRouter) addEndpointProxyToContext(method string, e *config.EndpointConfig, prxy proxy.Proxy, total int) {
+	method = strings.ToTitle(method)
+	path := e.Endpoint
+	if method != http.MethodGet && total > 1 {
+		if !router.IsValidSequentialEndpoint(e) {
+			r.cfg.Logger.Error(logPrefix, method, "endpoints with sequential proxy enabled only allow a non-GET in the last backend! Ignoring", path)
+			return
+		}
+	}
+
+	proxy.Proxys[e.Endpoint] = prxy
+
+	r.urlCatalog.mu.Lock()
+	defer r.urlCatalog.mu.Unlock()
+
+	methods, ok := r.urlCatalog.catalog[path]
+	if !ok {
+		r.urlCatalog.catalog[path] = []string{method}
+		return
+	}
+	r.urlCatalog.catalog[path] = append(methods, method)
 }
 
 func (r ginRouter) registerKrakendEndpoint(rg *gin.RouterGroup, method string, e *config.EndpointConfig, h gin.HandlerFunc, total int) {

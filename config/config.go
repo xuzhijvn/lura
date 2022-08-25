@@ -196,6 +196,7 @@ type Connection struct {
 // EndpointConfig defines the configuration of a single endpoint to be exposed
 // by the lura service
 type EndpointConfig struct {
+	Type string `mapstructure:"type"`
 	// url pattern to be registered and exposed to the world
 	Endpoint string `mapstructure:"endpoint"`
 	// HTTP method of the endpoint (GET, POST, PUT, etc)
@@ -221,6 +222,7 @@ type EndpointConfig struct {
 // Backend defines how lura should connect to the backend service (the API resource to consume)
 // and how it should process the received response
 type Backend struct {
+	Type string `mapstructure:"type"`
 	// Group defines the name of the property the response should be moved to. If empty, the response is
 	// not changed
 	Group string `mapstructure:"group"`

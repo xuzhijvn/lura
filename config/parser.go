@@ -230,6 +230,7 @@ type parseableTLS struct {
 }
 
 type parseableEndpointConfig struct {
+	Type            string              `json:"type"`
 	Endpoint        string              `json:"endpoint"`
 	Method          string              `json:"method"`
 	Backend         []*parseableBackend `json:"backend"`
@@ -244,6 +245,7 @@ type parseableEndpointConfig struct {
 
 func (p *parseableEndpointConfig) normalize() *EndpointConfig {
 	e := EndpointConfig{
+		Type:            p.Type,
 		Endpoint:        p.Endpoint,
 		Method:          p.Method,
 		ConcurrentCalls: p.ConcurrentCalls,
@@ -310,6 +312,7 @@ func (p *parseableAsyncAgent) normalize() *AsyncAgent {
 }
 
 type parseableBackend struct {
+	Type                     string            `json:"type"`
 	Group                    string            `json:"group"`
 	Method                   string            `json:"method"`
 	Host                     []string          `json:"host"`
@@ -327,6 +330,7 @@ type parseableBackend struct {
 
 func (p *parseableBackend) normalize() *Backend {
 	b := Backend{
+		Type:                     p.Type,
 		Group:                    p.Group,
 		Method:                   p.Method,
 		Host:                     p.Host,

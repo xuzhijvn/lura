@@ -8,6 +8,8 @@ import (
 	"github.com/luraproject/lura/v2/sd"
 )
 
+var Proxys = make(map[string]Proxy)
+
 // Factory creates proxies based on the received endpoint configuration.
 //
 // Both, factories and backend factories, create proxies but factories are designed as a stack makers
@@ -27,6 +29,10 @@ func (f FactoryFunc) New(cfg *config.EndpointConfig) (Proxy, error) { return f(c
 // DefaultFactory returns a default http proxy factory with the injected logger
 func DefaultFactory(logger logging.Logger) Factory {
 	return NewDefaultFactory(httpProxy, logger)
+}
+
+func DynamicFactory(logger logging.Logger) Factory {
+	return NewDefaultFactory(dynamicProxy, logger)
 }
 
 // DefaultFactoryWithSubscriber returns a default proxy factory with the injected logger and subscriber factory
