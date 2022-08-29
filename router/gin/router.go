@@ -164,7 +164,7 @@ func (r ginRouter) registerKrakendEndpoints(rg *gin.RouterGroup, cfg config.Serv
 	}
 }
 
-func (r ginRouter) addEndpointProxyToContext(method string, e *config.EndpointConfig, prxy proxy.Proxy, total int) {
+func (r ginRouter) addEndpointProxyToContext(method string, e *config.EndpointConfig, proxyStack proxy.Proxy, total int) {
 	method = strings.ToTitle(method)
 	path := e.Endpoint
 	if method != http.MethodGet && total > 1 {
@@ -174,7 +174,7 @@ func (r ginRouter) addEndpointProxyToContext(method string, e *config.EndpointCo
 		}
 	}
 
-	proxy.Proxys[e.Endpoint] = prxy
+	proxy.RouteTable[e.Endpoint] = proxyStack
 
 	r.urlCatalog.mu.Lock()
 	defer r.urlCatalog.mu.Unlock()

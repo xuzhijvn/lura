@@ -8,7 +8,7 @@ import (
 	"github.com/luraproject/lura/v2/sd"
 )
 
-var Proxys = make(map[string]Proxy)
+var RouteTable = make(map[string]Proxy)
 
 // Factory creates proxies based on the received endpoint configuration.
 //

@@ -1,0 +1,79 @@
+{
+  "version": 3,
+  "name": "My lovely gateway",
+  "port": 8080,
+  "timeout": "10s",
+  "cache_ttl": "3600s",
+  "endpoints": [
+    {
+      "endpoint": "/v1",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "type": "internal",
+          "url_pattern": "/v2",
+          "encoding": "json",
+          "sd": "static",
+          "method": "GET",
+          "host": [
+            "http://localhost:8080"
+          ],
+          "disable_host_sanitize": false,
+          "group": "backend11"
+        },
+        {
+          "url_pattern": "/httpRequest/test.php",
+          "encoding": "json",
+          "sd": "static",
+          "method": "GET",
+          "host": [
+            "https://Json.Ge"
+          ],
+          "disable_host_sanitize": false,
+          "group": "backend12"
+        }
+      ],
+      "extra_config": {
+        "github.com/devopsfaith/krakend/proxy": {
+          "sequential": true
+        }
+      }
+    },
+    {
+      "type": "internal",
+      "endpoint": "/v2",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "url_pattern": "/httpRequest/test.php",
+          "encoding": "json",
+          "sd": "static",
+          "method": "GET",
+          "host": [
+            "https://Json.Ge"
+          ],
+          "disable_host_sanitize": false,
+          "group": "backend21"
+        },
+        {
+          "url_pattern": "/httpRequest/test.php",
+          "encoding": "json",
+          "sd": "static",
+          "method": "GET",
+          "host": [
+            "https://Json.Ge"
+          ],
+          "disable_host_sanitize": false,
+          "group": "backend22"
+        }
+      ],
+      "extra_config": {
+        "github.com/devopsfaith/krakend/proxy": {
+          "sequential": true
+        }
+      }
+    }
+  ]
+}

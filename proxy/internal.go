@@ -24,7 +24,6 @@ func NewInternalProxyWithHTTPExecutor(remote *config.Backend, dec encoding.Decod
 func NewInternalProxyDetailed(backend *config.Backend, ch client.HTTPStatusHandler, rp HTTPResponseParser) Proxy {
 	return func(ctx context.Context, request *Request) (*Response, error) {
 
-		return Handle(backend.URLPattern, ctx, request)
-
+		return RouteTable[backend.URLPattern](ctx, request)
 	}
 }
